@@ -13,6 +13,11 @@ set ( v1
     src/v1_simple_image/main.cpp
 )
 
+set ( v2
+    src/v2_simple_image/main.cpp
+)
+
+
 include_directories(src)
 
 
