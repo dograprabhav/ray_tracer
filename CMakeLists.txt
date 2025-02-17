@@ -14,7 +14,7 @@ set ( v1
 )
 
 set ( v2
-    src/v2_simple_image/main.cpp
+    src/v2/main.cpp
 )
 
 
