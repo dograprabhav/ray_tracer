@@ -10,16 +10,26 @@ set ( CMAKE_CXX_EXTENSIONS        OFF )
 
 # Source
 set ( v1 
-    src/v1_simple_image/main.cpp
+    src/v1/main.cpp
 )
 
 set ( v2
     src/v2/main.cpp
+    src/v2/color.h
+    src/v2/ray.h
+    src/v2/vec3.h
 )
 
+set ( v3
+    src/v2/main.cpp
+    src/v2/color.h
+    src/v2/ray.h
+    src/v2/vec3.h
+)
 
 include_directories(src)
 
 
 add_executable(v1 ${EXTERNAL} ${v1})
 add_executable(v2 ${EXTERNAL} ${v2})
+add_executable(v3 ${EXTERNAL} ${v3})

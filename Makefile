@@ -10,9 +10,13 @@ v1:
 	make build
 	./build/v1 > v1.ppm
 
-v1:
+v2:
 	make build
 	./build/v2 > v2.ppm
+
+v3:
+	make build
+	./build/v3 > v3.ppm
 
 clean:
 	rm -rf build image.ppm

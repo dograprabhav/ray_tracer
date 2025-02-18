@@ -11,12 +11,15 @@ int main() {
 
     // Generating a sample image
     int image_width = 2560;
-    int image_height = 256;
-    std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    int image_height = 2560;
+    std::cout << "P3\n";
+    std::cout << image_width << ' ' << image_height << '\n';
+    std::cout << "255\n";
 
     for (int j = 0; j < image_height; j++) {
-        std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
-        for (int i = 0; i < image_width; i++) {
+        std::clog << "\rLines remaining: " << (image_height - j) << ' ' << std::flush;
+        for (int i = 0; i < image_width; i++)
+        {
             auto r = double(i) / (image_width - 1);
             auto g = double(j) / (image_height - 1);
             auto b = 0.0;
@@ -28,5 +31,5 @@ int main() {
             std::cout << ir << ' ' << ig << ' ' << ib << '\n';
         }
     }
-    std::clog << "\rDone\n";
+    std::clog << "\rDone                    \n";
 }
