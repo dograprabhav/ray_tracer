@@ -4,8 +4,11 @@
 </p>
 
 **V2 Results:** Set up a simple scene with an object where rays are being traced. When they hit the sphere in the scene, the pixel is interpreted as red.
+
 **How it works?**
-![image](https://github.com/user-attachments/assets/d4902ee4-5bb2-4327-a37f-68d06857b9b1)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/d4902ee4-5bb2-4327-a37f-68d06857b9b1" width="400" height="300">
+</p>
 
 **Output**
 <p align="center">
