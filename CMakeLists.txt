@@ -21,10 +21,10 @@ set ( v2
 )
 
 set ( v3
-    src/v2/main.cpp
-    src/v2/color.h
-    src/v2/ray.h
-    src/v2/vec3.h
+    src/v3/main.cpp
+    src/v3/color.h
+    src/v3/ray.h
+    src/v3/vec3.h
 )
 
 include_directories(src)
