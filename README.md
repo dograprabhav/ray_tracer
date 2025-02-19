@@ -7,7 +7,7 @@
 
 **How it works?**
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/d4902ee4-5bb2-4327-a37f-68d06857b9b1" width="400" height="300">
+  <img src="https://github.com/user-attachments/assets/d4902ee4-5bb2-4327-a37f-68d06857b9b1" width="800" height="600">
 </p>
 
 **Output**
