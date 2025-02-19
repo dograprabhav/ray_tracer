@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-double hit_sphere(const point3 &center, double radius, const ray &r)
+bool hit_sphere(const point3 &center, double radius, const ray &r)
 {
     // Equation of a sphere with center at (0 0 0):
     // => x² + y² + z² = r²
@@ -36,41 +36,22 @@ double hit_sphere(const point3 &center, double radius, const ray &r)
     // 𝑎 = M ⋅ M
     // 𝑏 = −2 M ⋅ (𝐂 − N)
     // c = (𝐂 − N) ⋅ (𝐂 − N) - r²
-    // Simplifying,
-    // 𝑎 = M ⋅ M = [LengthOfVector(V)]²
-    // Let's say, h = M ⋅ (𝐂 − N)
-    // b = -2 ⋅ h
-    // Using the quadratic formula:
-    // t = (-b ± sqrt(b⋅b - 4⋅a⋅c)) / (2⋅a)
-    // Substitute b = -2⋅h:
-    // t = (-(-2⋅h) ± sqrt((-2⋅h)⋅(-2⋅h) - 4⋅a⋅c)) / (2⋅a)
-    // Simplify:
-    // t = (2⋅h ± sqrt(4⋅h⋅h - 4⋅a⋅c)) / (2⋅a)
-    // Factor out 2 from the square root:
-    // t = (2⋅h ± 2⋅sqrt(h⋅h - a⋅c)) / (2⋅a)
-    // Cancel the 2's:
-    // t = (h ± sqrt(h⋅h - a⋅c)) / a
-
     vec3 oc = center - r.origin();
-    auto a = r.direction().length_squared();
-    auto h = dot(r.direction(), oc);
-    auto c = oc.length_squared() - radius * radius;
-    auto discriminant = h * h - a * c;
-    if (discriminant < 0) {
-        return -1.0;
-    } else { // Point of intersection exists between the sphere and the ray
-        return (h - std::sqrt(discriminant)) / a;
+    auto a = dot(r.direction(), r.direction());
+    auto b = -2.0 * dot(r.direction(), oc);
+    auto c = dot(oc, oc) - radius * radius;
+    auto discriminant = b * b - 4 * a * c;
+    if (discriminant >= 0) { // Point of intersection exists between the sphere and the ray
+        return true;
     }
+    return false;
 }
 
 color ray_color(const ray &r)
 {
     // If ray hits sphere return red color
-    auto t = hit_sphere(point3(0, 0, -1), 0.5, r);
-    if (t > 0.0) {
-        vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
-        return 0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1);
-    }
+    if (hit_sphere(point3(0, 0, -1), 0.5, r))
+        return color(1, 0, 0);
 
     // If the ray doesnt hit the sphere then do nothing and just put a edges to center liner blend
     // Linear blend:
@@ -121,8 +102,8 @@ int main()
     auto pixel_delta_v = viewport_v / image_height;
 
     // Calculate the location of the upper left pixel.
-    auto viewport_upper_left = camera_center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
-    auto pixel_upper_left = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+    auto viewport_upper_left_corner_vector = camera_center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
+    auto pixel_upper_left_center = viewport_upper_left_corner_vector + 0.5 * (pixel_delta_u + pixel_delta_v);
 
     // P3 image format
     // P3 is a plain text format for Portable Pixmap (PPM) image files.
@@ -141,7 +122,7 @@ int main()
         std::clog << "\rLines remaining: " << (image_height - j) << ' ' << std::flush;
         for (int i = 0; i < image_width; i++)
         {
-            auto pixel_center = pixel_upper_left + (i * pixel_delta_u) + (j * pixel_delta_v);
+            auto pixel_center = pixel_upper_left_center + (i * pixel_delta_u) + (j * pixel_delta_v);
             auto ray_direction = pixel_center - camera_center;
             // Make a light ray using a point of origin and direction
             ray r(camera_center, ray_direction);
