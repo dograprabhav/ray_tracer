@@ -11,6 +11,7 @@ run:
 	./build/v1 > v1.ppm
 	./build/v2 > v2.ppm
 	./build/v3 > v3.ppm
+	./build/v4 > v4.ppm
 
 custom:
 	@read -p "Enter version (e.g., v2, v3, v4): " V; \
