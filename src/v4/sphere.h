@@ -77,9 +77,12 @@ public:
                 return false;
         }
 
+        // Sets where along the ray the intersection happened in hit_record
         rec.t = root;
+        // Sets where the actual 3D position of that intersection
         rec.p = r.at(rec.t);
-        rec.normal = (rec.p - center) / radius;
+        // Sets unit vector perpendicular to the spheres surface where intersection happened
+        rec.normal = (rec.p - center) / radius; 
 
         return true;
     }

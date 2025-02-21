@@ -61,7 +61,12 @@ private:
         if (world.hit(r, interval(0, infinity), rec))
         {
             // It calculates and returns the shaded color based on the surface normal
-            return 0.5 * (rec.normal + color(1, 1, 1));
+            auto whiteColor = color(1, 1, 1);
+            // "rec.normal" has values between [−1, 1]
+            // We add (1, 1, 1) = whiteColor to make it positive
+            // Now "rec.normal" + whiteColor has values between [0, 2]
+            // Multiplying it by 0.5 scales it back into [0, 1] acceptable range
+            return 0.5 * (rec.normal + whiteColor);
         }
 
         // If the ray doesnt hit the sphere then do nothing and just put a edges to center liner blend
