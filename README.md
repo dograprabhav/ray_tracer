@@ -24,5 +24,5 @@
 **V4 Results:** Streamlined code and added 2 spheres and added anti-aliasing
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/2530d498-7abf-42f1-82f5-0bb02df877e8" width="400" height="225">
+  <img src="https://github.com/user-attachments/assets/f288ea04-4657-488e-8bfe-de00e6c5f649" width="400" height="225">
 </p>
