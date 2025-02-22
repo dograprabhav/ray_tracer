@@ -1,6 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "commons.h"
 #include "hittable.h"
 
 class camera
@@ -13,6 +14,8 @@ private:
     point3 pixel_upper_left_center; // Location of pixel (0, 0) center
     vec3 pixel_delta_u;             // Offset to pixel to the right
     vec3 pixel_delta_v;             // Offset to pixel below
+    int samples_per_pixel = 100;    // Count of random samples for each pixel
+    double pixel_samples_scale;     // Color scale factor for a sum of pixel samples
 
     void initialize() {
         image_height = int(image_width / aspect_ratio);
@@ -20,6 +23,11 @@ private:
         {
             image_height = 1;
         }
+
+        // It computes the scaling factor for averaging the color values of multiple samples per pixel.
+        // Since multiple rays are cast per pixel (samples_per_pixel), their accumulated color values need to be averaged.
+        // Multiplying by pixel_samples_scale ensures that the final pixel color is normalized to stay within the correct range.
+        pixel_samples_scale = 1.0 / samples_per_pixel;
 
         // Defining the camera center: For simpler calculations lets set the center at (0, 0, 0)
         // A point in 3D space from which all scene rays will originate (this is also commonly referred to as the eye point).
@@ -80,8 +88,29 @@ private:
         return (1.0 - a) * colorWhite + a * colorLightBlue;
     }
 
+    ray get_ray(int i, int j) const
+    {
+        // Construct a camera ray originating from the origin and directed at randomly sampled
+        // point around the pixel location i, j.
+
+        auto offset = sample_square();
+        auto pixel_sample = pixel_upper_left_center + ((i + offset.x()) * pixel_delta_u) + ((j + offset.y()) * pixel_delta_v);
+
+        auto ray_origin = camera_center;
+        auto ray_direction = pixel_sample - ray_origin;
+
+        return ray(ray_origin, ray_direction);
+    }
+
+    // Returns the vector to a random point in the [-0.5, -0.5] - [+0.5, +0.5] unit square.
+    vec3 sample_square() const
+    {
+        // "random_double" returns a random number in range [0, 1]
+        return vec3(random_double() - 0.5, random_double() - 0.5, 0);
+    }
+
 public:
-    camera(const double aspect_ratio, const int width) : aspect_ratio(aspect_ratio), image_width(width) {}
+    camera(const double aspect_ratio, const int image_width) : aspect_ratio(aspect_ratio), image_width(image_width) {}
 
     void render(const hittable &world)
     {
@@ -104,12 +133,18 @@ public:
             std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
             for (int i = 0; i < image_width; i++)
             {
-                auto pixel_center = pixel_upper_left_center + (i * pixel_delta_u) + (j * pixel_delta_v);
-                auto ray_direction = pixel_center - camera_center;
-                ray r(camera_center, ray_direction);
-
-                color pixel_color = ray_color(r, world);
-                write_color(std::cout, pixel_color);
+                color pixel_color(0, 0, 0);
+                // Anti-Aliasing using supersampling technique
+                // Rendered images often show jagged edges, known as aliasing, due to point sampling.
+                // Real - world images appear smooth because they blend foreground and background colors.
+                // To mimic this, we average multiple samples per pixel, simulating how our eyes perceive distant details.
+                // A simple approach is to sample light within a pixel’s surrounding area to approximate a continuous image.                                                                                                                                                                                                                              
+                for (int sample = 0; sample < samples_per_pixel; sample++)
+                {
+                    ray r = get_ray(i, j);
+                    pixel_color += ray_color(r, world);
+                }
+                write_color(std::cout, pixel_samples_scale * pixel_color);
             }
         }
 

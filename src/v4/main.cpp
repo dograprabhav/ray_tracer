@@ -1,13 +1,9 @@
 #include "commons.h"
 #include "camera.h"
 #include "interval.h"
-#include "vec3.h"
-#include "ray.h"
 #include "hittable.h"
 #include "hittable_list.h"
 #include "sphere.h"
-#include "ray.h"
-#include "color.h"
 
 #include <iostream>
 

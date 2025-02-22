@@ -5,14 +5,6 @@
 #include <iostream>
 #include <random>
 
-double random_double(double min = 0.0, double max = 1.0)
-{
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(min, max);
-    return dis(gen);
-}
-
 class vec3
 {
 public:

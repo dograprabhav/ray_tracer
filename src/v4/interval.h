@@ -27,7 +27,7 @@ public:
         return min < x && x < max;
     }
 
-    // Prevents input values from exceeding expected limits
+    // Prevents input values from exceeding expected interval limits
     double clamp(double x) const
     {
         if (x < min)
