@@ -152,12 +152,15 @@ inline vec3 random_unit_vector()
     {
         auto p = vec3::random(-1, 1);
         auto lensq = p.length_squared();
+        // Squaring very small values can underflow to zero, making normalization invalid (∞,∞,∞).
         if (1e-160 < lensq && lensq <= 1.0)
             return p / sqrt(lensq);
     }
 }
 
-// TODO
+// Generates a random vector on the hemisphere
+// If the vector is not in the same hemisphere as the normal, it is negated
+// If dot product of the vector and the normal is positive, they are on the same side of the surface
 inline vec3 random_on_hemisphere(const vec3 &normal)
 {
     vec3 on_unit_sphere = random_unit_vector();
@@ -167,7 +170,7 @@ inline vec3 random_on_hemisphere(const vec3 &normal)
         return -on_unit_sphere;
 }
 
-// TODO
+// Generates a random vector in the unit sphere
 inline vec3 reflect(const vec3 &v, const vec3 &n)
 {
     return v - 2 * dot(v, n) * n;
