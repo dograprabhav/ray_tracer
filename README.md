@@ -1,11 +1,17 @@
-**V1 Results:** Checking how to create a simple PPM format image using c++ code
+**Final Render:**
+
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/7bf3820d-1b8d-4d1b-9c66-49c2771d0eae" width="400" height="225">
+  <img src="https://github.com/user-attachments/assets/1002575a-cc57-4d1e-b088-6efff9cff894" width="400" height="225">
 </p>
 
 **How it works?**
 <p align="center">
   <img src="https://github.com/user-attachments/assets/d4902ee4-5bb2-4327-a37f-68d06857b9b1" width="600" height="450">
+</p>
+
+**V1 Results:** Checking how to create a simple PPM format image using c++ code
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/7bf3820d-1b8d-4d1b-9c66-49c2771d0eae" width="400" height="225">
 </p>
 
 **V2 Results:** Set up a simple scene with an object where rays are being traced. When they hit the sphere in the scene, the pixel is interpreted as red.
