@@ -26,3 +26,9 @@
 <p align="center">
   <img src="https://github.com/user-attachments/assets/f288ea04-4657-488e-8bfe-de00e6c5f649" width="400" height="225">
 </p>
+
+**V5 Results:** Completed all the changes, added material properties and dynamic camera changes
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/73a84b14-6208-477e-bbec-d42b31c720b1" width="400" height="225">
+</p>
