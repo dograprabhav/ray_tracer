@@ -7,7 +7,8 @@
 class sphere : public hittable
 {
 public:
-    sphere(const point3 &center, double radius) : center(center), radius(std::fmax(0, radius)) {}
+    sphere(const point3 &center, double radius, shared_ptr<material> mat) 
+        : center(center), radius(std::fmax(0, radius)), mat(mat) {}
 
     bool hit(const ray &r, interval ray_t, hit_record &rec) const override
     {
@@ -82,7 +83,10 @@ public:
         // Sets where the actual 3D position of that intersection
         rec.p = r.at(rec.t);
         // Sets unit vector perpendicular to the spheres surface where intersection happened
-        rec.normal = (rec.p - center) / radius; 
+        vec3 outward_normal = (rec.p - center) / radius; 
+        rec.set_face_normal(r, outward_normal);
+        // Sets the material of the sphere
+        rec.mat = mat;
 
         return true;
     }
@@ -90,6 +94,7 @@ public:
 private:
     point3 center;
     double radius;
+    shared_ptr<material> mat;
 };
 
 #endif

@@ -61,6 +61,9 @@
         "vector": "cpp",
         "__nullptr": "cpp",
         "compare": "cpp",
-        "concepts": "cpp"
+        "concepts": "cpp",
+        "complex": "cpp",
+        "execution": "cpp",
+        "sstream": "cpp"
     }
 }

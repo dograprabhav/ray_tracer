@@ -42,10 +42,10 @@ set ( v4
 set ( v5
     src/v5/main.cpp
     src/v5/interval.h
-    src/v5/material.h
     src/v5/color.h
     src/v5/hittable.h
     src/v5/hittable_list.h
+    src/v5/material.h
     src/v5/ray.h
     src/v5/commons.h
     src/v5/sphere.h

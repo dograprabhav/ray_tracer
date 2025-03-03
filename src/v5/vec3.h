@@ -170,13 +170,15 @@ inline vec3 random_on_hemisphere(const vec3 &normal)
         return -on_unit_sphere;
 }
 
-// Generates a random vector in the unit sphere
+// The function reflects a vector v off a surface with normal n using the reflection formula: v - 2 * dot(v,n) * n
 inline vec3 reflect(const vec3 &v, const vec3 &n)
 {
     return v - 2 * dot(v, n) * n;
 }
 
-// TODO
+// Uses snell's law to calculate the refraction of a vector
+// The function takes the input vector uv, the normal n, and the ratio of refractive indices etai_over_etat
+// The function returns the refracted vector
 inline vec3 refract(const vec3 &uv, const vec3 &n, double etai_over_etat)
 {
     auto cos_theta = std::fmin(dot(-uv, n), 1.0);

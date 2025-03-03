@@ -3,11 +3,19 @@
 
 #include "commons.h"
 #include "hittable.h"
+#include "material.h"
 
 struct camera_config {
     double aspect_ratio;
     int image_width;
+    int samples_per_pixel;
     int max_depth;
+    int vfov;
+    point3 camera_lookfrom;
+    point3 camera_lookat;
+    vec3 vup;
+    double defocus_angle;
+    double focus_dist;
 };
 
 class camera
@@ -22,7 +30,18 @@ private:
     vec3 pixel_delta_v;             // Offset to pixel below
     int samples_per_pixel = 100;    // Count of random samples for each pixel
     double pixel_samples_scale;     // Color scale factor for a sum of pixel samples
-    int max_depth = 10;   // Maximum number of ray bounces into scene
+    int max_depth = 10;             // Maximum number of ray bounces into scene
+
+    double vfov = 90;                           // Vertical view angle (field of view)
+    point3 camera_lookfrom = point3(0,0,0);     // Point camera is looking from
+    point3 camera_lookat   = point3(0,0,-1);    // Point camera is looking at
+    vec3   vup      = vec3(0,1,0);              // Camera-relative "up" direction
+    vec3   defocus_disk_u;                      // Defocus disk horizontal radius
+    vec3   defocus_disk_v;                      // Defocus disk vertical radius
+    double defocus_angle = 0;                   // Variation angle of rays through each pixel
+    double focus_dist = 10;                     // Distance from camera lookfrom point to plane of perfect focus
+
+
 
     void initialize() {
         image_height = int(image_width / aspect_ratio);
@@ -35,6 +54,8 @@ private:
         // Since multiple rays are cast per pixel (samples_per_pixel), their accumulated color values need to be averaged.
         // Multiplying by pixel_samples_scale ensures that the final pixel color is normalized to stay within the correct range.
         pixel_samples_scale = 1.0 / samples_per_pixel;
+        // Angle of the camera view in radians
+        auto theta = degrees_to_radians(vfov);
 
         // Defining the camera center: For simpler calculations lets set the center at (0, 0, 0)
         // A point in 3D space from which all scene rays will originate (this is also commonly referred to as the eye point).
@@ -42,30 +63,41 @@ private:
         // We'll initially set the distance between the viewport and the camera center point to be one unit.
         // This distance is often referred to as the focal length.
         // Check "src/v2/how_it_works.png"
-        auto focal_length = 1.0;
-        camera_center = point3(0, 0, 0);
+        camera_center = camera_lookfrom;
         // A viewport is an imaginary rectangle in the 3D world through which rays are cast to create an image.
         // It acts like a camera screen that captures the scene.
         // Each point on the viewport corresponds to a pixel in the final image.
         // Check "src/how_it_works.png"
-        auto viewport_height = 2.0;
+        // Refer to diagram in 12.1 for this
+        auto h = std::tan(theta/2);
+        auto viewport_height = 2 * h * focus_dist;
         auto viewport_width = viewport_height * (double(image_width) / image_height);
         // We don't just use aspect_ratio when computing viewport_width,
         // it's because the value set to aspect_ratio is the ideal ratio,
         // it may not be the actual ratio between image_width and image_height.
         // If image_height was allowed to be real valued—rather than just an integer—then it would be fine to use aspect_ratio.
 
+        // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
+        auto w = unit_vector(camera_lookfrom - camera_lookat);
+        auto u = unit_vector(cross(vup, w));
+        auto v = cross(w, u);        
+
         // Calculate the vectors across the horizontal and down the vertical viewport edges.
-        auto viewport_u = vec3(viewport_width, 0, 0);
-        auto viewport_v = vec3(0, -viewport_height, 0);
+        auto viewport_u = viewport_width * u;    // Vector across viewport horizontal edge
+        auto viewport_v = viewport_height * -v;  // Vector down viewport vertical edge
 
         // Calculate the horizontal and vertical delta vectors from pixel to pixel.
         pixel_delta_u = viewport_u / image_width;
         pixel_delta_v = viewport_v / image_height;
 
         // Calculate the location of the upper left pixel.
-        auto viewport_upper_left_corner_vector = camera_center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
+        auto viewport_upper_left_corner_vector = camera_center - (focus_dist * w) - viewport_u/2 - viewport_v/2;
         pixel_upper_left_center = viewport_upper_left_corner_vector + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+        // Calculate the camera defocus disk basis vectors.
+        auto defocus_radius = focus_dist * std::tan(degrees_to_radians(defocus_angle / 2));
+        defocus_disk_u = u * defocus_radius;
+        defocus_disk_v = v * defocus_radius;        
     }
 
     color ray_color(const ray &r, int depth, const hittable &world) const
@@ -77,17 +109,15 @@ private:
         // If ray hits sphere
         if (world.hit(r, interval(0.001, infinity), rec))
         {
-            // Previous version: 9.1 A Simple Diffuse Material
-                // // Generates a random bounce direction of light
-                // // Recursively computes the light contribution
-                // vec3 direction = random_on_hemisphere(rec.normal);
-                // // Scales the light contribution by 0.5
-                // // This is a simple way to dampen the light contribution at each bounce.
-                // // But here we are using depth to limit the number of bounces.
-
-            // Previous version: 9.4 True Lambertian Reflection
-            vec3 direction = rec.normal + random_unit_vector();
-            return 0.5 * ray_color(ray(rec.p, direction), depth - 1, world);
+            ray scattered;
+            color attenuation;
+            // const ray& r_in         <- Incoming ray hitting the surface
+            // const hit_record& rec   <- Information about the hit point (position, normal, etc.)
+            // color& attenuation      <- How much light the material absorbs or reflects
+            // ray& scattered          <- The scattered (reflected/refracted) ray        
+            if (rec.mat->scatter(r, rec, attenuation, scattered))
+                return attenuation * ray_color(scattered, depth-1, world);
+            return color(0,0,0);
         }
 
         // If the ray doesnt hit the sphere then do nothing and just put a edges to center liner blend
@@ -109,10 +139,24 @@ private:
         auto offset = sample_square();
         auto pixel_sample = pixel_upper_left_center + ((i + offset.x()) * pixel_delta_u) + ((j + offset.y()) * pixel_delta_v);
 
-        auto ray_origin = camera_center;
+        // It determines the origin of the ray being traced from the camera.
+        // - If defocus_angle is 0 or negative, the ray originates from the camera center.
+        // - If defocus_angle is greater than 0, the ray originates from a randomly sampled point on the defocus disk.
+
+        // This is needed to simulate the camera's depth of field, in an actual camera:
+        // - Objects exactly at this focus distance appear sharp.
+        // - Objects closer or farther than the focus distance become blurred due to the way light rays spread.
+
+        auto ray_origin = (defocus_angle <= 0) ? camera_center : defocus_disk_sample();
         auto ray_direction = pixel_sample - ray_origin;
 
         return ray(ray_origin, ray_direction);
+    }
+
+    point3 defocus_disk_sample() const {
+        // Returns a random point in the camera defocus disk.
+        auto p = random_in_unit_disk();
+        return camera_center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
     }
 
     // Returns the vector to a random point in the [-0.5, -0.5] - [+0.5, +0.5] unit square.
@@ -126,7 +170,13 @@ public:
     camera(const camera_config& config) : 
     aspect_ratio(config.aspect_ratio), 
     image_width(config.image_width), 
-    max_depth(config.max_depth) 
+    max_depth(config.max_depth),
+    vfov(config.vfov),
+    camera_lookfrom(config.camera_lookfrom),
+    camera_lookat(config.camera_lookat),
+    vup(config.vup),
+    defocus_angle(config.defocus_angle),
+    focus_dist(config.focus_dist)
     {}
 
     void render(const hittable &world)
