@@ -1,7 +1,7 @@
 **Final Render:**
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/1002575a-cc57-4d1e-b088-6efff9cff894" width="400" height="225">
+  <img src="https://github.com/user-attachments/assets/1002575a-cc57-4d1e-b088-6efff9cff894" width="800" height="450">
 </p>
 
 **How it works?**
