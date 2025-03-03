@@ -39,10 +39,37 @@ set ( v4
     src/v4/vec3.h
 )
 
-include_directories(src)
+set ( v5
+    src/v5/main.cpp
+    src/v5/interval.h
+    src/v5/color.h
+    src/v5/hittable.h
+    src/v5/hittable_list.h
+    src/v5/material.h
+    src/v5/ray.h
+    src/v5/commons.h
+    src/v5/sphere.h
+    src/v5/vec3.h
+)
 
+set ( v6
+    src/v6_final/main.cpp
+    src/v6_final/interval.h
+    src/v6_final/color.h
+    src/v6_final/hittable.h
+    src/v6_final/hittable_list.h
+    src/v6_final/material.h
+    src/v6_final/ray.h
+    src/v6_final/commons.h
+    src/v6_final/sphere.h
+    src/v6_final/vec3.h
+)
+
+include_directories(src)
 
 add_executable(v1 ${EXTERNAL} ${v1})
 add_executable(v2 ${EXTERNAL} ${v2})
 add_executable(v3 ${EXTERNAL} ${v3})
 add_executable(v4 ${EXTERNAL} ${v4})
+add_executable(v5 ${EXTERNAL} ${v5})
+add_executable(v6 ${EXTERNAL} ${v6})

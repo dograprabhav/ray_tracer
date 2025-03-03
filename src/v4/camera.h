@@ -4,6 +4,12 @@
 #include "commons.h"
 #include "hittable.h"
 
+struct camera_config {
+    double aspect_ratio;
+    int image_width;
+    int max_depth;
+};
+
 class camera
 {
 private:
@@ -16,6 +22,7 @@ private:
     vec3 pixel_delta_v;             // Offset to pixel below
     int samples_per_pixel = 100;    // Count of random samples for each pixel
     double pixel_samples_scale;     // Color scale factor for a sum of pixel samples
+    int max_depth = 10;   // Maximum number of ray bounces into scene
 
     void initialize() {
         image_height = int(image_width / aspect_ratio);
@@ -61,20 +68,26 @@ private:
         pixel_upper_left_center = viewport_upper_left_corner_vector + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
-    color ray_color(const ray &r, const hittable &world) const
+    color ray_color(const ray &r, int depth, const hittable &world) const
     {
+        if (depth <= 0)
+            return color(0,0,0);
         hit_record rec;
 
         // If ray hits sphere
-        if (world.hit(r, interval(0, infinity), rec))
+        if (world.hit(r, interval(0.001, infinity), rec))
         {
-            // It calculates and returns the shaded color based on the surface normal
-            auto whiteColor = color(1, 1, 1);
-            // "rec.normal" has values between [−1, 1]
-            // We add (1, 1, 1) = whiteColor to make it positive
-            // Now "rec.normal" + whiteColor has values between [0, 2]
-            // Multiplying it by 0.5 scales it back into [0, 1] acceptable range
-            return 0.5 * (rec.normal + whiteColor);
+            // Previous version: 9.1 A Simple Diffuse Material
+                // // Generates a random bounce direction of light
+                // // Recursively computes the light contribution
+                // vec3 direction = random_on_hemisphere(rec.normal);
+                // // Scales the light contribution by 0.5
+                // // This is a simple way to dampen the light contribution at each bounce.
+                // // But here we are using depth to limit the number of bounces.
+
+            // Previous version: 9.4 True Lambertian Reflection
+            vec3 direction = rec.normal + random_unit_vector();
+            return 0.5 * ray_color(ray(rec.p, direction), depth - 1, world);
         }
 
         // If the ray doesnt hit the sphere then do nothing and just put a edges to center liner blend
@@ -110,7 +123,11 @@ private:
     }
 
 public:
-    camera(const double aspect_ratio, const int image_width) : aspect_ratio(aspect_ratio), image_width(image_width) {}
+    camera(const camera_config& config) : 
+    aspect_ratio(config.aspect_ratio), 
+    image_width(config.image_width), 
+    max_depth(config.max_depth) 
+    {}
 
     void render(const hittable &world)
     {
@@ -142,7 +159,7 @@ public:
                 for (int sample = 0; sample < samples_per_pixel; sample++)
                 {
                     ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, world);
+                    pixel_color += ray_color(r, max_depth, world);
                 }
                 write_color(std::cout, pixel_samples_scale * pixel_color);
             }
